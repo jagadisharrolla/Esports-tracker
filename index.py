@@ -1,3 +1,5 @@
 # index.py
-from your_exact_inner_folder_name.wsgi import application
-app = application
+from app import app  # or wherever your Flask/Django app is
+
+# Vercel needs this exact variable name
+app = app
