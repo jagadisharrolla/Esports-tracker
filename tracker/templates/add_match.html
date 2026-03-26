@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:520px;margin:0 auto" class="fade-up">
+  <p style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;color:var(--neon2);margin-bottom:8px">MATCH LOG</p>
+  <h1 style="margin-bottom:8px">LOG <span class="neon-text">MATCH</span></h1>
+  <p style="color:var(--muted);margin-bottom:32px">Recording stats for <strong style="color:var(--neon)">{{ player.username }}</strong></p>
+  <div class="card">
+    <form method="POST">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div><label>Game</label><input type="text" name="game" placeholder="e.g. Call of Duty" required></div>
+        <div><label>Mode</label><input type="text" name="mode" placeholder="e.g. Team Deathmatch" required></div>
+        <div><label>Map</label><input type="text" name="map" placeholder="e.g. Rust" required></div>
+        <div><label>Date</label><input type="date" name="date" required></div>
+        <div><label>Kills</label><input type="number" name="kills" min="0" placeholder="0" required></div>
+        <div><label>Deaths</label><input type="number" name="deaths" min="0" placeholder="0" required></div>
+        <div><label>Assists</label><input type="number" name="assists" min="0" placeholder="0" required></div>
+        <div><label>Result</label><select name="result"><option value="win">🏆 Victory</option><option value="loss">💀 Defeat</option></select></div>
+        <div><label>Weapon Used</label><input type="text" name="weapon" placeholder="e.g. AK-47"></div>
+        <div><label>Notes</label><input type="text" name="notes" placeholder="Any notes..."></div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:12px;margin-top:8px">SAVE MATCH →</button>
+    </form>
+  </div>
+  <div style="text-align:center;margin-top:20px">
+    <a href="{% url 'player_profile' player.username %}" style="color:var(--muted);font-size:13px;text-decoration:none">← Back to Profile</a>
+  </div>
+</div>
+{% endblock %}

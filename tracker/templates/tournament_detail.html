@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="fade-up" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:20px;">
+  <div>
+    <p style="font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">
+      <a href="{% url 'tournament_list' %}" style="color:var(--muted);text-decoration:none;">Tournaments</a> / {{ tournament.game }}
+    </p>
+    <h1 style="font-size:clamp(24px,4vw,48px);letter-spacing:-1px;margin-bottom:8px;">{{ tournament.name }}</h1>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="font-family:'Orbitron',monospace;font-size:10px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:1px;
+        {% if tournament.status == 'live' %}background:rgba(0,255,136,0.12);color:#00ff88;border:1px solid rgba(0,255,136,0.3);
+        {% elif tournament.status == 'upcoming' %}background:rgba(0,245,255,0.08);color:var(--neon);border:1px solid rgba(0,245,255,0.2);
+        {% else %}background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid rgba(255,255,255,0.1);{% endif %}">
+        {% if tournament.status == 'live' %}● LIVE{% elif tournament.status == 'upcoming' %}UPCOMING{% else %}COMPLETED{% endif %}
+      </span>
+      <span style="font-size:13px;color:var(--muted);">📍 {{ tournament.location }}</span>
+      <span style="font-size:13px;color:var(--muted);">🗓 {{ tournament.start_date }} — {{ tournament.end_date }}</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <form method="POST" action="{% url 'tournament_update_status' tournament.slug %}" style="display:inline;">
+      {% csrf_token %}
+      <select name="status" style="width:auto;margin:0;min-width:130px;font-size:12px;">
+        <option value="upcoming" {% if tournament.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+        <option value="live" {% if tournament.status == 'live' %}selected{% endif %}>Live</option>
+        <option value="completed" {% if tournament.status == 'completed' %}selected{% endif %}>Completed</option>
+      </select>
+      <button type="submit" class="btn btn-ghost" style="font-size:10px;padding:8px 14px;margin-left:6px;">Update Status</button>
+    </form>
+    <a href="{% url 'org_dashboard' %}" class="btn btn-ghost" style="font-size:10px;">⚙ Org Dashboard</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:40px;" class="fade-up">
+  <div class="stat-card"><div class="stat-num" style="color:#ffd700;">{{ tournament.prize }}</div><div class="stat-label">Prize Pool</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon);" data-count="{{ tournament.total_registered }}">0</div><div class="stat-label">Players Registered</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#00ff88;">{{ tournament.max_players }}</div><div class="stat-label">Max Players</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon2);">{{ tournament.game }}</div><div class="stat-label">Game</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:var(--muted);font-size:20px;">{{ tournament.format }}</div><div class="stat-label">Format</div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:40px;" class="fade-up">
+
+  <div>
+    {% if tournament.description %}
+    <div class="card" style="margin-bottom:20px;">
+      <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:14px;">ABOUT THIS TOURNAMENT</p>
+      <p style="color:var(--muted);font-size:15px;line-height:1.8;">{{ tournament.description }}</p>
+    </div>
+    {% endif %}
+    {% if tournament.rules %}
+    <div class="card">
+      <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--neon);margin-bottom:14px;">📜 RULES & FORMAT</p>
+      <p style="color:var(--muted);font-size:14px;line-height:1.9;white-space:pre-line;">{{ tournament.rules }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:20px;">
+      <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--neon);margin-bottom:16px;">+ ADD PLAYER TO TOURNAMENT</p>
+      <form method="POST" action="{% url 'tournament_register' tournament.slug %}">
+        {% csrf_token %}
+        <label>Select Player</label>
+        <select name="username" style="margin-bottom:12px;">
+          <option value="">Choose player...</option>
+          {% for p in available_players %}<option value="{{ p.username }}">{{ p.username }}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Register Player →</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--neon2);margin-bottom:16px;">📊 ENTER MATCH RESULT</p>
+      <form method="POST" action="{% url 'tournament_add_result' tournament.slug %}">
+        {% csrf_token %}
+        <label>Player</label>
+        <select name="username" style="margin-bottom:10px;">
+          <option value="">Select player...</option>
+          {% for reg in registrations %}<option value="{{ reg.username }}">{{ reg.username }}</option>{% endfor %}
+        </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><label>Kills</label><input type="number" name="kills" min="0" placeholder="0"></div>
+          <div><label>Deaths</label><input type="number" name="deaths" min="0" placeholder="0"></div>
+          <div><label>Assists</label><input type="number" name="assists" min="0" placeholder="0"></div>
+          <div><label>Rank</label><input type="number" name="rank" min="1" placeholder="1"></div>
+        </div>
+        <label>Date</label>
+        <input type="date" name="date">
+        <label>Result</label>
+        <select name="result">
+          <option value="win">Win</option>
+          <option value="loss">Loss</option>
+        </select>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;">Save Result →</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card fade-up" style="margin-bottom:40px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--neon);">⬡ REGISTERED PLAYERS — {{ tournament.total_registered }} / {{ tournament.max_players }}</p>
+    <div style="height:4px;flex:1;max-width:200px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;">
+      {% if tournament.max_players > 0 %}
+      <div style="height:100%;width:{% widthratio tournament.total_registered tournament.max_players 100 %}%;background:linear-gradient(90deg,var(--neon3),var(--neon));border-radius:2px;"></div>
+      {% endif %}
+    </div>
+  </div>
+  {% if registrations %}
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border);">
+        <th style="padding:12px 16px;text-align:left;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">RANK</th>
+        <th style="padding:12px 16px;text-align:left;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">PLAYER</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--neon);">K/D</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:#00ff88;">WIN%</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">CAREER K</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">MATCHES</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--neon2);">TOURNAMENT RESULT</th>
+        <th style="padding:12px 16px;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for reg in registrations %}
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.2s;" onmouseover="this.style.background='rgba(0,245,255,0.02)'" onmouseout="this.style.background=''">
+        <td style="padding:16px;font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:var(--muted);">
+          {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}#{{ forloop.counter }}{% endif %}
+        </td>
+        <td style="padding:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            {% if reg.avatar %}<img src="{{ reg.avatar }}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+            {% else %}<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--neon3),var(--neon));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:15px;color:#000;">{{ reg.username|slice:":1"|upper }}</div>{% endif %}
+            <div>
+              <p style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;">{{ reg.username }}</p>
+              <p style="font-size:11px;color:var(--muted);">Joined {{ reg.registered_at }}</p>
+            </div>
+          </div>
+        </td>
+        <td style="padding:16px;text-align:center;font-family:'Orbitron',monospace;font-weight:900;font-size:18px;color:var(--neon);">{{ reg.kd }}</td>
+        <td style="padding:16px;text-align:center;font-family:'Orbitron',monospace;font-weight:900;font-size:18px;color:#00ff88;">{{ reg.wr }}%</td>
+        <td style="padding:16px;text-align:center;font-family:'Orbitron',monospace;font-weight:900;font-size:18px;color:#ffd700;">{{ reg.kills }}</td>
+        <td style="padding:16px;text-align:center;font-size:14px;color:var(--muted);">{{ reg.tm }}</td>
+        <td style="padding:16px;text-align:center;">
+          {% if reg.result %}
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;">
+              <span style="font-family:'Orbitron',monospace;font-size:11px;color:#00ff88;">{{ reg.result.kills }}K</span>
+              <span style="color:var(--muted);">/</span>
+              <span style="font-family:'Orbitron',monospace;font-size:11px;color:var(--neon2);">{{ reg.result.deaths }}D</span>
+              <span style="font-family:'Orbitron',monospace;font-size:9px;padding:2px 8px;border-radius:20px;{% if reg.result.result == 'win' %}background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.3);{% else %}background:rgba(255,0,110,0.1);color:var(--neon2);border:1px solid rgba(255,0,110,0.3);{% endif %}">{% if reg.result.result == 'win' %}WIN{% else %}LOSS{% endif %}</span>
+            </div>
+          {% else %}
+            <span style="font-size:12px;color:var(--muted);">—</span>
+          {% endif %}
+        </td>
+        <td style="padding:16px;text-align:right;">
+          <a href="{% url 'player_profile' reg.username %}" style="font-size:11px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--border);padding-bottom:1px;" onmouseover="this.style.color='var(--neon)'" onmouseout="this.style.color='var(--muted)'">Profile →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align:center;padding:48px;color:var(--muted);">
+    <div style="font-size:40px;margin-bottom:12px;">👥</div>
+    <p style="font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;">NO PLAYERS REGISTERED YET</p>
+    <p style="font-size:14px;margin-top:8px;">Use the form on the right to add players to this tournament.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% if tournament.bracket and tournament.bracket.round_1 %}
+<div class="card fade-up" style="margin-top:40px;border-top:3px solid var(--neon);">
+    <p style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;color:var(--neon);margin-bottom:20px;">⚔️ OFFICIAL BRACKET: ROUND 1</p>
+    <div style="display:flex;flex-wrap:wrap;gap:20px;">
+        {% for match in tournament.bracket.round_1 %}
+        <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:12px;min-width:220px;">
+            <div style="border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;margin-bottom:8px;font-weight:600;">
+                <span style="color:var(--muted);font-size:10px;margin-right:8px;">P1</span> {{ match.p1 }}
+            </div>
+            <div style="font-weight:600;">
+                <span style="color:var(--muted);font-size:10px;margin-right:8px;">P2</span> {% if match.p2 %}{{ match.p2 }}{% else %}<span style="color:var(--neon2);">BYE</span>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% elif user.role == 'org' and tournament.status == 'upcoming' and tournament.total_registered > 1 %}
+<div style="margin-top:40px;" class="fade-up">
+    <form method="POST" action="{% url 'generate_bracket' tournament.slug %}">
+        {% csrf_token %}
+        <button class="btn btn-primary" style="padding:16px 24px;font-size:14px;letter-spacing:2px;">🎲 GENERATE MATCH BRACKET</button>
+    </form>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="fade-up" style="margin-bottom:40px">
+  <p style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;color:var(--neon);margin-bottom:8px">⬡ COMMAND CENTER ⬡</p>
+  <h1 style="font-size:42px;margin-bottom:12px">PLAYER <span class="neon-text">DASHBOARD</span></h1>
+  <p style="color:var(--muted);font-size:17px">Track, analyze and dominate the competition</p>
+  <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);margin:16px 0 0"></div>
+</div>
+
+<div style="display:flex;gap:12px;margin-bottom:40px" class="fade-up">
+  <form method="GET" style="display:flex;gap:12px;flex:1">
+    <div style="position:relative;flex:1;max-width:420px">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)">⌕</span>
+      <input name="q" value="{{ query }}" placeholder="Search player..." style="padding-left:42px;margin:0">
+    </div>
+    <button type="submit" class="btn btn-ghost">Search</button>
+  </form>
+  <span style="color:var(--muted);font-size:13px;align-self:center;font-family:'Orbitron',monospace;letter-spacing:1px">{{ players|length }} PLAYERS</span>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px">
+  {% for player in players %}
+  <div class="player-card fade-up" style="animation-delay:{{ forloop.counter0 }}00ms">
+    <div class="player-card-inner card" style="padding:0;overflow:hidden">
+      <div style="height:80px;background:linear-gradient(135deg,rgba(123,47,255,0.3),rgba(0,245,255,0.15));position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(0,245,255,0.03) 10px,rgba(0,245,255,0.03) 20px)"></div>
+        <div style="position:absolute;top:12px;right:12px">
+          <form method="POST" action="{% url 'delete_player' player.username %}" onsubmit="return confirm('Delete {{ player.username }}?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" style="padding:5px 10px;font-size:9px">✕</button>
+          </form>
+        </div>
+        <div style="position:absolute;bottom:-32px;left:24px">
+          {% if player.avatar %}
+            <img src="{{ player.avatar }}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--bg);box-shadow:0 0 20px rgba(0,245,255,0.4)">
+          {% else %}
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--neon3),var(--neon));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:22px;color:#000;border:3px solid var(--bg);box-shadow:0 0 20px rgba(0,245,255,0.4)">{{ player.username|slice:":1"|upper }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div style="padding:44px 24px 24px">
+        <h3 style="margin-bottom:4px;letter-spacing:2px;font-size:15px">{{ player.username }}</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:20px;font-family:'Orbitron',monospace;letter-spacing:1px">{{ player.tm }} MATCHES PLAYED</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px">
+          <div style="background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.1);border-radius:10px;padding:10px;text-align:center">
+            <p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:4px">K/D</p>
+            <p style="font-size:20px;font-weight:900;font-family:'Orbitron',monospace;color:var(--neon)">{{ player.kd }}</p>
+          </div>
+          <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.1);border-radius:10px;padding:10px;text-align:center">
+            <p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:4px">WIN%</p>
+            <p style="font-size:20px;font-weight:900;font-family:'Orbitron',monospace;color:#00ff88">{{ player.wr }}%</p>
+          </div>
+          <div style="background:rgba(255,0,110,0.05);border:1px solid rgba(255,0,110,0.1);border-radius:10px;padding:10px;text-align:center">
+            <p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:4px">GP</p>
+            <p style="font-size:20px;font-weight:900;font-family:'Orbitron',monospace;color:var(--neon2)">{{ player.tm }}</p>
+          </div>
+        </div>
+        <a href="{% url 'player_profile' player.username %}" class="btn btn-primary" style="width:100%;justify-content:center">View Profile →</a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div style="grid-column:1/-1;text-align:center;padding:80px 0" class="fade-up">
+    <div style="font-size:64px;margin-bottom:16px">🎮</div>
+    <h2 style="color:var(--muted);margin-bottom:12px">NO PLAYERS YET</h2>
+    <a href="{% url 'add_player' %}" class="btn btn-primary">+ Add First Player</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

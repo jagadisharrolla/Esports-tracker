@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="fade-up" style="margin-bottom:40px;text-align:center">
+  <p style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:4px;color:var(--neon2);margin-bottom:12px">⬡ HEAD TO HEAD ⬡</p>
+  <h1 style="font-size:42px">COMPARE <span class="neon-text">PLAYERS</span></h1>
+</div>
+
+<div class="card fade-up" style="margin-bottom:40px;">
+  <form method="GET" style="display:flex;gap:20px;justify-content:center;align-items:flex-end;flex-wrap:wrap;">
+    <div>
+      <label style="color:var(--neon);">Player 1</label>
+      <select name="p1" style="min-width:200px;">
+        <option value="">Select Player...</option>
+        {% for p in all_players %}
+          <option value="{{ p.username }}" {% if p1_name == p.username %}selected{% endif %}>{{ p.username }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div style="padding-bottom:12px;font-family:'Orbitron',monospace;color:var(--muted);font-weight:900;font-size:20px;">VS</div>
+    
+    <div>
+      <label style="color:var(--neon2);">Player 2</label>
+      <select name="p2" style="min-width:200px;">
+        <option value="">Select Player...</option>
+        {% for p in all_players %}
+          <option value="{{ p.username }}" {% if p2_name == p.username %}selected{% endif %}>{{ p.username }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary" style="padding:13px 24px;">Compare ⚔️</button>
+  </form>
+</div>
+
+{% if p1 and p2 %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="fade-up">
+    <div class="card" style="border-top:3px solid var(--neon);">
+        <div style="text-align:center;margin-bottom:20px;">
+            {% if p1.avatar %}
+              <img src="{{ p1.avatar }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--neon);margin-bottom:12px;">
+            {% else %}
+              <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--neon3),var(--neon));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:28px;color:#000;margin:0 auto 12px;border:3px solid var(--bg);">{{ p1.username|slice:":1"|upper }}</div>
+            {% endif %}
+            <h2 style="font-family:'Orbitron',monospace;color:var(--text);">{{ p1.username }}</h2>
+        </div>
+        
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid {% if p1.kd > p2.kd %}rgba(0,255,136,0.3){% else %}transparent{% endif %};">
+                <span style="color:var(--muted);font-size:13px;">K/D Ratio</span>
+                <span style="font-family:'Orbitron',monospace;font-weight:900;color:{% if p1.kd > p2.kd %}#00ff88{% elif p1.kd < p2.kd %}var(--neon2){% else %}var(--text){% endif %};">{{ p1.kd }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid {% if p1.wr > p2.wr %}rgba(0,255,136,0.3){% else %}transparent{% endif %};">
+                <span style="color:var(--muted);font-size:13px;">Win Rate</span>
+                <span style="font-family:'Orbitron',monospace;font-weight:900;color:{% if p1.wr > p2.wr %}#00ff88{% elif p1.wr < p2.wr %}var(--neon2){% else %}var(--text){% endif %};">{{ p1.wr }}%</span>
+            </div>
+             <div style="display:flex;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;">
+                <span style="color:var(--muted);font-size:13px;">Matches Played</span>
+                <span style="font-family:'Orbitron',monospace;font-weight:900;">{{ p1.tm }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" style="border-top:3px solid var(--neon2);">
+        <div style="text-align:center;margin-bottom:20px;">
+            {% if p2.avatar %}
+              <img src="{{ p2.avatar }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--neon2);margin-bottom:12px;">
+            {% else %}
+              <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--neon3),var(--neon2));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:28px;color:#fff;margin:0 auto 12px;border:3px solid var(--bg);">{{ p2.username|slice:":1"|upper }}</div>
+            {% endif %}
+            <h2 style="font-family:'Orbitron',monospace;color:var(--text);">{{ p2.username }}</h2>
+        </div>
+        
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid {% if p2.kd > p1.kd %}rgba(0,255,136,0.3){% else %}transparent{% endif %};">
+                <span style="color:var(--muted);font-size:13px;">K/D Ratio</span>
+                <span style="font-family:'Orbitron',monospace;font-weight:900;color:{% if p2.kd > p1.kd %}#00ff88{% elif p2.kd < p1.kd %}var(--neon2){% else %}var(--text){% endif %};">{{ p2.kd }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid {% if p2.wr > p1.wr %}rgba(0,255,136,0.3){% else %}transparent{% endif %};">
+                <span style="color:var(--muted);font-size:13px;">Win Rate</span>
+                <span style="font-family:'Orbitron',monospace;font-weight:900;color:{% if p2.wr > p1.wr %}#00ff88{% elif p2.wr < p1.wr %}var(--neon2){% else %}var(--text){% endif %};">{{ p2.wr }}%</span>
+            </div>
+             <div style="display:flex;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;">
+                <span style="color:var(--muted);font-size:13px;">Matches Played</span>
+                <span style="font-family:'Orbitron',monospace;font-weight:900;">{{ p2.tm }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif p1_name or p2_name %}
+<div class="card fade-up" style="text-align:center;padding:40px;">
+    <p style="color:var(--neon2);font-family:'Orbitron',monospace;">⚠ Please select two valid players to compare.</p>
+</div>
+{% endif %}
+
+{% endblock %}

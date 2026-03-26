@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:700px;margin:0 auto;" class="fade-up">
+  <span class="section-eyebrow">Organization</span>
+  <h1 style="font-size:48px;letter-spacing:-1.5px;margin-bottom:8px;">CREATE <span class="neon-text">TOURNAMENT</span></h1>
+  <p style="color:var(--muted);margin-bottom:40px;font-size:16px;">Set up a new eSports tournament for players to register and compete.</p>
+
+  <div class="card">
+    <form method="POST">
+      {% csrf_token %}
+      <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--neon);margin-bottom:20px;">⬡ TOURNAMENT INFO</p>
+      <label>Tournament Name</label>
+      <input type="text" name="name" placeholder="e.g. BGMI Pro Series Season 3" required autofocus>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label>Game</label>
+          <select name="game" required>
+            <option value="">Select game...</option>
+            <option value="BGMI">BGMI</option>
+            <option value="Call of Duty">Call of Duty</option>
+            <option value="Valorant">Valorant</option>
+            <option value="Free Fire">Free Fire</option>
+            <option value="CS2">CS2</option>
+            <option value="Fortnite">Fortnite</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Game Mode</label>
+          <input type="text" name="mode" placeholder="e.g. Battle Royale, TDM">
+        </div>
+        <div>
+          <label>Format</label>
+          <select name="format">
+            <option value="Battle Royale">Battle Royale</option>
+            <option value="Team Deathmatch">Team Deathmatch</option>
+            <option value="Single Elimination">Single Elimination</option>
+            <option value="Double Elimination">Double Elimination</option>
+            <option value="Round Robin">Round Robin</option>
+          </select>
+        </div>
+        <div>
+          <label>Max Players</label>
+          <input type="number" name="max_players" value="32" min="2" max="512">
+        </div>
+        <div>
+          <label>Start Date</label>
+          <input type="date" name="start_date" required>
+        </div>
+        <div>
+          <label>End Date</label>
+          <input type="date" name="end_date" required>
+        </div>
+        <div>
+          <label>Prize Pool</label>
+          <input type="text" name="prize" placeholder="e.g. ₹1,00,000 or $5,000">
+        </div>
+        <div>
+          <label>Location</label>
+          <input type="text" name="location" placeholder="e.g. Online / Mumbai">
+        </div>
+      </div>
+
+      <div style="margin-top:8px;">
+        <label>Organizer Name</label>
+        <input type="text" name="organizer" placeholder="Your organization name" required>
+        <label>Description</label>
+        <textarea name="description" rows="3" style="resize:vertical;" placeholder="Describe the tournament..."></textarea>
+        <label>Rules & Format Details</label>
+        <textarea name="rules" rows="4" style="resize:vertical;" placeholder="Enter rules, scoring system, eligibility..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:16px;font-size:13px;margin-top:8px;">
+        Create Tournament →
+      </button>
+    </form>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;">
+    <a href="{% url 'tournament_list' %}" style="font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--border);padding-bottom:1px;">← Back to Tournaments</a>
+  </div>
+</div>
+{% endblock %}

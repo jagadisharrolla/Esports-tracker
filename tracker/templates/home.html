@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if user.role == 'player' %}
+
+<!-- PLAYER HOME PAGE -->
+
+<!-- WELCOME BANNER -->
+<div class="fade-up" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
+  <div>
+    <span class="section-eyebrow">⬡ Welcome Back ⬡</span>
+    <h1 style="font-size:clamp(28px,4vw,48px);letter-spacing:-1px;margin-bottom:6px;">
+      Hey, <span class="neon-text">{{ user.username }}</span>! 👋
+    </h1>
+    <p style="color:var(--muted);font-size:15px;">
+      {% if player_data %}
+        {{ player_data.tm }} matches played ·
+        {{ player_data.game_count }} game{{ player_data.game_count|pluralize }} tracked ·
+        {{ my_tournaments|length }} active tournament{{ my_tournaments|length|pluralize }}
+      {% else %}
+        Welcome to eSports Tracker — start by logging your first match!
+      {% endif %}
+    </p>
+  </div>
+  {% if player_data %}
+  <div style="background:rgba(255,0,110,0.08);border:1px solid rgba(255,0,110,0.25);border-radius:12px;padding:16px 24px;display:flex;align-items:center;gap:14px;">
+    <span style="font-size:32px;">
+      {% if player_data.kd >= 3.0 %}💎
+      {% elif player_data.kd >= 2.0 %}🔷
+      {% elif player_data.kd >= 1.5 %}🥇
+      {% elif player_data.kd >= 1.0 %}🥈
+      {% else %}🥉{% endif %}
+    </span>
+    <div>
+      <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;">CURRENT RANK</p>
+      <p style="font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--neon2);">
+        {% if player_data.kd >= 3.0 %}MASTER
+        {% elif player_data.kd >= 2.0 %}DIAMOND
+        {% elif player_data.kd >= 1.5 %}GOLD
+        {% elif player_data.kd >= 1.0 %}SILVER
+        {% else %}BRONZE{% endif %}
+      </p>
+      <p style="font-size:12px;color:var(--muted);margin-top:2px;">#{{ player_data.global_rank }} on Leaderboard</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- NEW TOURNAMENT ALERT -->
+{% for t in new_tournaments %}
+<div class="fade-up" style="background:linear-gradient(135deg,rgba(0,255,136,0.08),rgba(0,245,255,0.04));border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:16px 22px;display:flex;align-items:center;gap:16px;margin-bottom:16px;animation:glowGreen 2s ease-in-out infinite alternate;">
+  <div style="width:10px;height:10px;border-radius:50%;background:#00ff88;box-shadow:0 0 12px #00ff88;flex-shrink:0;animation:pulse 1.5s infinite;"></div>
+  <div style="flex:1;">
+    <p style="font-family:'Orbitron',monospace;font-size:11px;font-weight:900;color:#00ff88;margin-bottom:2px;">🆕 NEW TOURNAMENT — {{ t.name }}</p>
+    <p style="font-size:13px;color:var(--muted);">{{ t.game }} · Prize {{ t.prize }} · {{ t.total_registered }}/{{ t.max_players }} slots filled · {{ t.location }}</p>
+  </div>
+  <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-primary" style="font-size:10px;padding:9px 18px;white-space:nowrap;">Register Now →</a>
+</div>
+{% endfor %}
+<style>
+@keyframes glowGreen{from{box-shadow:0 0 0 rgba(0,255,136,0)}to{box-shadow:0 0 24px rgba(0,255,136,0.12)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+</style>
+
+<!-- CAREER STATS STRIP -->
+{% if player_data %}
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:36px;" class="fade-up">
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon);" data-count="{{ player_data.kd }}" data-float="true">0</div><div class="stat-label">K/D Ratio</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#00ff88;" data-count="{{ player_data.wr }}" data-suffix="%">0%</div><div class="stat-label">Win Rate</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon2);" data-count="{{ player_data.total_kills }}">0</div><div class="stat-label">Total Kills</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#ffd700;" data-count="{{ player_data.tm }}">0</div><div class="stat-label">Matches Played</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#b794f4;" data-count="{{ player_data.game_count }}">0</div><div class="stat-label">Games Played</div></div>
+</div>
+{% endif %}
+
+<!-- MY GAMES — SEPARATE CARD PER GAME -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;" class="fade-up">
+  <h2 style="font-size:16px;letter-spacing:1px;">🎮 MY GAMES</h2>
+  <a href="{% url 'tournament_list' %}" class="btn btn-ghost" style="font-size:10px;padding:8px 16px;">Browse All Tournaments →</a>
+</div>
+
+{% if games_stats %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:36px;" class="fade-up">
+  {% for gs in games_stats %}
+  <div style="background:var(--card);border:1px solid {% if gs.has_live %}rgba(0,255,136,0.35){% elif gs.has_upcoming %}var(--border){% else %}rgba(255,255,255,0.06){% endif %};border-radius:14px;overflow:hidden;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+
+    <!-- Game Banner -->
+    <div style="height:64px;background:linear-gradient(135deg,{{ gs.color1 }},{{ gs.color2 }});position:relative;overflow:hidden;display:flex;align-items:center;padding:0 16px;gap:12px;">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,0.02) 10px,rgba(255,255,255,0.02) 20px);"></div>
+      <span style="font-size:28px;position:relative;">{{ gs.icon }}</span>
+      <div style="position:relative;">
+        <p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;color:#fff;text-transform:uppercase;letter-spacing:0.5px;">{{ gs.game }}</p>
+        <p style="font-size:11px;color:rgba(255,255,255,0.5);">{{ gs.mode }}</p>
+      </div>
+      <div style="position:absolute;top:8px;right:10px;">
+        {% if gs.has_live %}
+          <span style="font-family:'Orbitron',monospace;font-size:7px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(0,255,136,0.15);color:#00ff88;border:1px solid rgba(0,255,136,0.35);letter-spacing:1px;">● LIVE</span>
+        {% elif gs.has_upcoming %}
+          <span style="font-family:'Orbitron',monospace;font-size:7px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(0,245,255,0.1);color:var(--neon);border:1px solid rgba(0,245,255,0.25);letter-spacing:1px;">UPCOMING</span>
+        {% else %}
+          <span style="font-family:'Orbitron',monospace;font-size:7px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid rgba(255,255,255,0.1);letter-spacing:1px;">NO TOURNAMENT</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Game Stats -->
+    <div style="padding:14px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+        <div style="background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.1);border-radius:8px;padding:10px 6px;text-align:center;">
+          <p style="font-size:7px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:3px;">K/D</p>
+          <p style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--neon);">{{ gs.kd }}</p>
+        </div>
+        <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.1);border-radius:8px;padding:10px 6px;text-align:center;">
+          <p style="font-size:7px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:3px;">WIN%</p>
+          <p style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#00ff88;">{{ gs.wr }}%</p>
+        </div>
+        <div style="background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.1);border-radius:8px;padding:10px 6px;text-align:center;">
+          <p style="font-size:7px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:3px;">KILLS</p>
+          <p style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#ffd700;">{{ gs.kills }}</p>
+        </div>
+      </div>
+
+      <!-- Tournament Status for this game -->
+      {% if gs.tournament %}
+        <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:14px;">✓</span>
+          <div>
+            <p style="font-family:'Orbitron',monospace;font-size:9px;color:#00ff88;letter-spacing:1px;margin-bottom:1px;">REGISTERED</p>
+            <p style="font-size:12px;color:var(--muted);">{{ gs.tournament }}</p>
+          </div>
+        </div>
+        <a href="{% url 'tournament_list' %}" class="btn btn-ghost" style="width:100%;font-size:9px;padding:9px;">View Tournament →</a>
+      {% elif gs.has_upcoming %}
+        <div style="background:rgba(0,245,255,0.04);border:1px solid rgba(0,245,255,0.12);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+          <p style="font-family:'Orbitron',monospace;font-size:9px;color:var(--neon);letter-spacing:1px;margin-bottom:1px;">TOURNAMENT OPEN</p>
+          <p style="font-size:12px;color:var(--muted);">{{ gs.upcoming_name }}</p>
+        </div>
+        <a href="{% url 'tournament_list' %}" class="btn btn-primary" style="width:100%;font-size:9px;padding:9px;">Register Now →</a>
+      {% else %}
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+          <p style="font-size:12px;color:var(--muted);">No active tournament for this game</p>
+        </div>
+        <a href="{% url 'player_profile' user.username %}" class="btn btn-ghost" style="width:100%;font-size:9px;padding:9px;">View Game Stats →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:48px;text-align:center;margin-bottom:36px;" class="fade-up">
+  <div style="font-size:48px;margin-bottom:16px;">🎮</div>
+  <h2 style="color:var(--muted);margin-bottom:8px;font-size:18px;">No Games Tracked Yet</h2>
+  <p style="color:var(--muted);margin-bottom:20px;">Log your first match to start tracking your performance per game</p>
+  <a href="{% url 'player_profile' user.username %}" class="btn btn-primary">+ Log First Match →</a>
+</div>
+{% endif %}
+
+<!-- MY ACTIVE TOURNAMENTS -->
+{% if my_tournaments %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;" class="fade-up">
+  <h2 style="font-size:16px;letter-spacing:1px;">🏆 MY ACTIVE TOURNAMENTS</h2>
+  <a href="{% url 'tournament_list' %}" class="btn btn-ghost" style="font-size:10px;padding:8px 16px;">Browse All →</a>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:36px;" class="fade-up">
+  {% for t in my_tournaments %}
+  <div style="background:var(--card);border:1px solid {% if t.status == 'live' %}rgba(0,255,136,0.25){% else %}var(--border){% endif %};border-radius:12px;padding:16px 20px;display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:16px;transition:all 0.2s;flex-wrap:wrap;" onmouseover="this.style.background='rgba(0,245,255,0.02)'" onmouseout="this.style.background='var(--card)'">
+    <span style="font-size:24px;">🎮</span>
+    <div>
+      <p style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">{{ t.name }}</p>
+      <p style="font-size:12px;color:var(--muted);">{{ t.game }} · {{ t.organizer }} · {{ t.total_registered }}/{{ t.max_players }} players</p>
+    </div>
+    <p style="font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:#ffd700;">{{ t.prize }}</p>
+    <span style="font-family:'Orbitron',monospace;font-size:9px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:1px;
+      {% if t.status == 'live' %}background:rgba(0,255,136,0.12);color:#00ff88;border:1px solid rgba(0,255,136,0.3);
+      {% elif t.status == 'upcoming' %}background:rgba(0,245,255,0.08);color:var(--neon);border:1px solid rgba(0,245,255,0.2);
+      {% else %}background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid rgba(255,255,255,0.1);{% endif %}">
+      {% if t.status == 'live' %}● LIVE{% elif t.status == 'upcoming' %}UPCOMING{% else %}COMPLETED{% endif %}
+    </span>
+    <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-primary" style="font-size:9px;padding:8px 16px;">View →</a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- OPEN TOURNAMENTS TO JOIN -->
+{% if open_tournaments %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;" class="fade-up">
+  <h2 style="font-size:16px;letter-spacing:1px;">🔓 OPEN FOR REGISTRATION</h2>
+  <a href="{% url 'tournament_list' %}" class="btn btn-ghost" style="font-size:10px;padding:8px 16px;">See All →</a>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:36px;" class="fade-up">
+  {% for t in open_tournaments %}
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(0,245,255,0.3)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'">
+    <div style="background:var(--bg2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <p style="font-family:'Orbitron',monospace;font-size:12px;font-weight:900;color:#fff;text-transform:uppercase;">{{ t.game }}</p>
+        <p style="font-size:11px;color:var(--muted);font-family:'Orbitron',monospace;margin-top:1px;">{{ t.organizer }}</p>
+      </div>
+      <span style="font-family:'Orbitron',monospace;font-size:8px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,245,255,0.08);color:var(--neon);border:1px solid rgba(0,245,255,0.2);letter-spacing:1px;">OPEN</span>
+    </div>
+    <div style="padding:14px 16px;">
+      <p style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;margin-bottom:10px;">{{ t.name }}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;padding-top:10px;border-top:1px solid var(--border);">
+        <div style="text-align:center;"><p style="font-size:7px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:2px;">PRIZE</p><p style="font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:#ffd700;">{{ t.prize }}</p></div>
+        <div style="text-align:center;"><p style="font-size:7px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:2px;">SLOTS</p><p style="font-family:'Orbitron',monospace;font-size:13px;font-weight:900;">{{ t.total_registered }}/{{ t.max_players }}</p></div>
+        <div style="text-align:center;"><p style="font-size:7px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:2px;">STARTS</p><p style="font-family:'Orbitron',monospace;font-size:11px;color:var(--muted);">{{ t.start_date }}</p></div>
+      </div>
+      <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-primary" style="width:100%;font-size:9px;padding:9px;">Register Now →</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- RECENT MATCHES -->
+{% if recent_matches %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;" class="fade-up">
+  <h2 style="font-size:16px;letter-spacing:1px;">⚔️ RECENT MATCHES</h2>
+  <a href="{% url 'add_match' user.username %}" class="btn btn-primary" style="font-size:10px;padding:8px 16px;">+ Log Match</a>
+</div>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:36px;" class="fade-up">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border);">
+        <th style="padding:12px 16px;text-align:left;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);">GAME</th>
+        <th style="padding:12px 16px;text-align:left;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);">MAP</th>
+        <th style="padding:12px 16px;text-align:left;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);">DATE</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:#00ff88;">K</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--neon2);">D</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--neon);">K/D</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);">RESULT</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in recent_matches %}
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.2s;" onmouseover="this.style.background='rgba(0,245,255,0.02)'" onmouseout="this.style.background=''">
+        <td style="padding:13px 16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">
+              {% if m.game == 'BGMI' %}🔫
+              {% elif m.game == 'Call of Duty' %}💥
+              {% elif m.game == 'Valorant' %}🎯
+              {% elif m.game == 'Free Fire' %}🔥
+              {% elif m.game == 'CS2' %}💣
+              {% else %}🎮{% endif %}
+            </span>
+            <span style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;">{{ m.game }}</span>
+          </div>
+        </td>
+        <td style="padding:13px 16px;font-size:13px;color:var(--muted);">{{ m.map }}</td>
+        <td style="padding:13px 16px;font-size:12px;color:var(--muted);">{{ m.date }}</td>
+        <td style="padding:13px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:#00ff88;">{{ m.kills }}</td>
+        <td style="padding:13px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--neon2);">{{ m.deaths }}</td>
+        <td style="padding:13px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:var(--neon);">{{ m.kd }}</td>
+        <td style="padding:13px 16px;text-align:center;">
+          {% if m.result == 'win' %}
+            <span class="tag tag-win">WIN</span>
+          {% else %}
+            <span class="tag tag-loss">LOSS</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- GLOBAL RANK MINI -->
+{% if leaderboard_mini %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;" class="fade-up">
+  <h2 style="font-size:16px;letter-spacing:1px;">📍 YOUR GLOBAL RANK</h2>
+  <a href="{% url 'leaderboard' %}" class="btn btn-ghost" style="font-size:10px;padding:8px 16px;">Full Leaderboard →</a>
+</div>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:36px;" class="fade-up">
+  <div style="display:grid;grid-template-columns:48px 1fr 90px 90px 80px;padding:10px 16px;border-bottom:1px solid var(--border);">
+    <span style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);">#</span>
+    <span style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);">PLAYER</span>
+    <span style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--neon);text-align:center;">K/D</span>
+    <span style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:#00ff88;text-align:center;">WIN%</span>
+    <span style="font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);text-align:center;">KILLS</span>
+  </div>
+  {% for p in leaderboard_mini %}
+  <div style="display:grid;grid-template-columns:48px 1fr 90px 90px 80px;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.03);align-items:center;transition:background 0.2s;{% if p.username == user.username %}background:rgba(0,245,255,0.05);border-left:3px solid var(--neon);{% endif %}" onmouseover="this.style.background='rgba(0,245,255,0.03)'" onmouseout="this.style.background='{% if p.username == user.username %}rgba(0,245,255,0.05){% endif %}'">
+    <span style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;">
+      {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}<span style="color:var(--muted);">#{{ forloop.counter }}</span>{% endif %}
+    </span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      {% if p.avatar %}<img src="{{ p.avatar }}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+      {% else %}<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--neon3),var(--neon));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:12px;color:#000;">{{ p.username|slice:":1"|upper }}</div>{% endif %}
+      <span style="font-family:'Orbitron',monospace;font-size:12px;font-weight:700;">{{ p.username }}</span>
+      {% if p.username == user.username %}<span style="font-family:'Orbitron',monospace;font-size:7px;background:rgba(0,245,255,0.15);color:var(--neon);padding:2px 7px;border-radius:4px;letter-spacing:1px;">YOU</span>{% endif %}
+    </div>
+    <span style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--neon);text-align:center;">{{ p.kd }}</span>
+    <span style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:#00ff88;text-align:center;">{{ p.wr }}%</span>
+    <span style="font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:#ffd700;text-align:center;">{{ p.kills }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- CTA BOTTOM -->
+<div class="fade-up" style="background:linear-gradient(135deg,rgba(123,47,255,0.12),rgba(0,245,255,0.06));border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;margin-bottom:16px;">
+  <h2 style="font-size:28px;margin-bottom:12px;letter-spacing:-0.5px;">Keep <span class="neon-text">Dominating</span></h2>
+  <p style="color:var(--muted);margin-bottom:24px;font-size:15px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.7;">Log more matches, join more tournaments and climb the leaderboard!</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+    <a href="{% url 'add_match' user.username %}" class="btn btn-primary btn-lg">+ Log New Match</a>
+    <a href="{% url 'tournament_list' %}" class="btn btn-secondary btn-lg">Browse Tournaments</a>
+    <a href="{% url 'compare' %}" class="btn btn-ghost btn-lg">⚔ Compare Players</a>
+  </div>
+</div>
+
+{% else %}
+
+<!-- ORG HOME PAGE -->
+<div class="fade-up" style="margin-bottom:48px;">
+  <span class="section-eyebrow">⬡ Organization Panel ⬡</span>
+  <h1 style="font-size:clamp(36px,6vw,72px);letter-spacing:-1.5px;margin-bottom:12px;">Welcome, <span class="neon-text">{{ user.username }}</span></h1>
+  <p style="color:var(--muted);font-size:16px;max-width:520px;">Manage your tournaments, track player performance and publish results from your org dashboard.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:48px;" class="fade-up">
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon);" data-count="{{ total_tournaments }}">0</div><div class="stat-label">Tournaments</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#00ff88;" data-count="{{ live|length }}">0</div><div class="stat-label">Live Now</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon2);" data-count="{{ upcoming|length }}">0</div><div class="stat-label">Upcoming</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#ffd700;" data-count="{{ total_players }}">0</div><div class="stat-label">Total Players</div></div>
+</div>
+
+<div style="display:flex;gap:14px;margin-bottom:48px;flex-wrap:wrap;" class="fade-up">
+  <a href="{% url 'tournament_create' %}" class="btn btn-primary btn-lg">+ Create Tournament</a>
+  <a href="{% url 'org_dashboard' %}" class="btn btn-secondary btn-lg">⚙ Org Dashboard</a>
+  <a href="{% url 'tournament_list' %}" class="btn btn-ghost btn-lg">View All Tournaments</a>
+</div>
+
+{% if live %}
+<div style="margin-bottom:36px;" class="fade-up">
+  <h2 style="font-size:14px;letter-spacing:2px;margin-bottom:14px;color:#00ff88;">● LIVE NOW</h2>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    {% for t in live %}
+    <div style="background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.2);border-radius:12px;padding:16px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,255,136,0.08)'" onmouseout="this.style.background='rgba(0,255,136,0.04)'">
+      <span style="font-size:24px;">🎮</span>
+      <div style="flex:1;min-width:160px;"><p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;">{{ t.name }}</p><p style="font-size:12px;color:var(--muted);margin-top:2px;">{{ t.game }} · {{ t.total_registered }} players</p></div>
+      <p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;color:#ffd700;">{{ t.prize }}</p>
+      <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-ghost" style="font-size:10px;padding:8px 16px;">Manage →</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if upcoming %}
+<div class="fade-up">
+  <h2 style="font-size:14px;letter-spacing:2px;margin-bottom:14px;color:var(--neon);">UPCOMING</h2>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    {% for t in upcoming %}
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,245,255,0.03)'" onmouseout="this.style.background='var(--card)'">
+      <span style="font-size:24px;">🎮</span>
+      <div style="flex:1;min-width:160px;"><p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;">{{ t.name }}</p><p style="font-size:12px;color:var(--muted);margin-top:2px;">{{ t.game }} · Starts {{ t.start_date }}</p></div>
+      <p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;color:#ffd700;">{{ t.prize }}</p>
+      <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-ghost" style="font-size:10px;padding:8px 16px;">Manage →</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

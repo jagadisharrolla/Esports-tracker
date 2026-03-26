@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="fade-up" style="margin-bottom:48px;text-align:center">
+  <p style="font-family:'Orbitron',monospace;font-size:11px;letter-spacing:4px;color:var(--neon2);margin-bottom:12px">⬡ RANKINGS ⬡</p>
+  <h1 style="font-size:42px">LEADER<span class="neon-text">BOARD</span></h1>
+  <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--neon2),transparent);margin:16px auto 0"></div>
+</div>
+<div class="card fade-up">
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border)">
+        <th style="padding:14px 20px;text-align:left;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted)">#</th>
+        <th style="padding:14px 20px;text-align:left;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted)">PLAYER</th>
+        <th style="padding:14px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--neon)">K/D</th>
+        <th style="padding:14px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:#00ff88">WIN%</th>
+        <th style="padding:14px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted)">GP</th>
+        <th style="padding:14px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted)">PROFILE</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for player in players %}
+      <tr class="fade-up" style="border-bottom:1px solid rgba(255,255,255,0.03);transition:all 0.3s;animation-delay:{{ forloop.counter0 }}00ms" onmouseover="this.style.background='rgba(0,245,255,0.03)';this.style.transform='translateX(4px)'" onmouseout="this.style.background='';this.style.transform=''">
+        <td style="padding:18px 20px;font-family:'Orbitron',monospace;font-size:16px;font-weight:900">
+          {% if forloop.counter == 1 %}<span style="font-size:22px;filter:drop-shadow(0 0 10px gold)">🥇</span>
+          {% elif forloop.counter == 2 %}<span style="font-size:22px">🥈</span>
+          {% elif forloop.counter == 3 %}<span style="font-size:22px">🥉</span>
+          {% else %}<span style="color:var(--muted)">#{{ forloop.counter }}</span>{% endif %}
+        </td>
+        <td style="padding:18px 20px">
+          <div style="display:flex;align-items:center;gap:14px">
+            {% if player.avatar %}
+              <img src="{{ player.avatar }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border)">
+            {% else %}
+              <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--neon3),var(--neon));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;color:#000;font-size:16px">{{ player.username|slice:":1"|upper }}</div>
+            {% endif %}
+            <span style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:1px">{{ player.username }}</span>
+          </div>
+        </td>
+        <td style="padding:18px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--neon);text-shadow:0 0 10px rgba(0,245,255,0.4)">{{ player.kd }}</td>
+        <td style="padding:18px 20px;text-align:center;font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#00ff88;text-shadow:0 0 10px rgba(0,255,136,0.4)">{{ player.wr }}%</td>
+        <td style="padding:18px 20px;text-align:center;color:var(--muted);font-size:15px;font-family:'Orbitron',monospace">{{ player.tm }}</td>
+        <td style="padding:18px 20px;text-align:center">
+          <a href="{% url 'player_profile' player.username %}" class="btn btn-ghost" style="padding:7px 16px;font-size:10px">View →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

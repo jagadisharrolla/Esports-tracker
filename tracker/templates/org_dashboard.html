@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="fade-up" style="margin-bottom:40px;">
+  <span class="section-eyebrow">Organization Panel</span>
+  <h1 style="font-size:clamp(32px,5vw,64px);letter-spacing:-1.5px;margin-bottom:8px;">ORG <span class="neon-text">DASHBOARD</span></h1>
+  <p style="color:var(--muted);font-size:16px;">Manage your tournaments, players and results from one place.</p>
+</div>
+
+<!-- ORG STATS -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:48px;" class="fade-up">
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon);" data-count="{{ total_tournaments }}">0</div><div class="stat-label">Total Tournaments</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#00ff88;" data-count="{{ live|length }}">0</div><div class="stat-label">Live Now</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:var(--neon2);" data-count="{{ upcoming|length }}">0</div><div class="stat-label">Upcoming</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:var(--muted);" data-count="{{ total_players }}">0</div><div class="stat-label">Total Players</div></div>
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;" class="fade-up">
+  <h2 style="font-size:20px;letter-spacing:1px;">ALL TOURNAMENTS</h2>
+  <a href="{% url 'tournament_create' %}" class="btn btn-primary">+ Create New Tournament</a>
+</div>
+
+<!-- LIVE -->
+{% if live %}
+<div style="margin-bottom:32px;" class="fade-up">
+  <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:#00ff88;margin-bottom:14px;">● LIVE NOW</p>
+  <div style="display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:12px;overflow:hidden;">
+    {% for t in live %}
+    <div style="background:rgba(0,255,136,0.04);padding:18px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,255,136,0.08)'" onmouseout="this.style.background='rgba(0,255,136,0.04)'">
+      <span style="font-size:22px;">🎮</span>
+      <div style="flex:1;min-width:180px;">
+        <p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:0.5px;">{{ t.name }}</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px;">{{ t.game }} · {{ t.organizer }}</p>
+      </div>
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div style="text-align:center;"><p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;">PRIZE</p><p style="font-family:'Orbitron',monospace;font-weight:900;color:#ffd700;font-size:14px;">{{ t.prize }}</p></div>
+        <div style="text-align:center;"><p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;">PLAYERS</p><p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;">{{ t.total_registered }}</p></div>
+        <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-ghost" style="font-size:10px;padding:7px 16px;">Manage →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- UPCOMING -->
+{% if upcoming %}
+<div style="margin-bottom:32px;" class="fade-up">
+  <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--neon);margin-bottom:14px;">UPCOMING</p>
+  <div style="display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:12px;overflow:hidden;">
+    {% for t in upcoming %}
+    <div style="background:var(--card);padding:18px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,245,255,0.04)'" onmouseout="this.style.background='var(--card)'">
+      <span style="font-size:22px;">🎮</span>
+      <div style="flex:1;min-width:180px;">
+        <p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:0.5px;">{{ t.name }}</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px;">{{ t.game }} · {{ t.start_date }}</p>
+      </div>
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div style="text-align:center;"><p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;">PRIZE</p><p style="font-family:'Orbitron',monospace;font-weight:900;color:#ffd700;font-size:14px;">{{ t.prize }}</p></div>
+        <div style="text-align:center;"><p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;">PLAYERS</p><p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;">{{ t.total_registered }}</p></div>
+        <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-ghost" style="font-size:10px;padding:7px 16px;">Manage →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- COMPLETED -->
+{% if completed %}
+<div class="fade-up">
+  <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:14px;">COMPLETED</p>
+  <div style="display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:12px;overflow:hidden;">
+    {% for t in completed %}
+    <div style="background:rgba(255,255,255,0.02);padding:18px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;opacity:0.7;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+      <span style="font-size:22px;">🏆</span>
+      <div style="flex:1;min-width:180px;">
+        <p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:0.5px;">{{ t.name }}</p>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px;">{{ t.game }} · Ended {{ t.end_date }}</p>
+      </div>
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div style="text-align:center;"><p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;">PRIZE</p><p style="font-family:'Orbitron',monospace;font-weight:900;color:#ffd700;font-size:14px;">{{ t.prize }}</p></div>
+        <div style="text-align:center;"><p style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;letter-spacing:1px;">PLAYERS</p><p style="font-family:'Orbitron',monospace;font-weight:900;font-size:14px;">{{ t.total_registered }}</p></div>
+        <a href="{% url 'tournament_detail' t.slug %}" class="btn btn-ghost" style="font-size:10px;padding:7px 16px;">View →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if not tournaments %}
+<div style="text-align:center;padding:80px 0;" class="fade-up">
+  <div style="font-size:56px;margin-bottom:16px;">🏆</div>
+  <h2 style="color:var(--muted);margin-bottom:12px;">No Tournaments Yet</h2>
+  <a href="{% url 'tournament_create' %}" class="btn btn-primary">+ Create First Tournament</a>
+</div>
+{% endif %}
+
+{% endblock %}

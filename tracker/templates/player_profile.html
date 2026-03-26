@@ -1,0 +1,54 @@
+<!-- TOURNAMENT HISTORY -->
+{% if player_tournaments %}
+<div class="card fade-up" style="margin-bottom:40px;">
+  <p style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--neon2);margin-bottom:20px;">🏆 TOURNAMENT HISTORY</p>
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border);">
+        <th style="padding:12px 16px;text-align:left;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">TOURNAMENT</th>
+        <th style="padding:12px 16px;text-align:left;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">GAME</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--neon);">PRIZE</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:#00ff88;">RESULT</th>
+        <th style="padding:12px 16px;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">STATUS</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in player_tournaments %}
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.2s;" onmouseover="this.style.background='rgba(0,245,255,0.02)'" onmouseout="this.style.background=''">
+        <td style="padding:14px 16px;">
+          <p style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;">{{ t.name }}</p>
+          <p style="font-size:11px;color:var(--muted);margin-top:2px;">{{ t.organizer }} · {{ t.start_date }}</p>
+        </td>
+        <td style="padding:14px 16px;font-size:13px;color:var(--muted);">{{ t.game }}</td>
+        <td style="padding:14px 16px;text-align:center;font-family:'Orbitron',monospace;font-weight:900;font-size:14px;color:#ffd700;">{{ t.prize }}</td>
+        <td style="padding:14px 16px;text-align:center;">
+          {% if t.player_result %}
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+              <span style="font-family:'Orbitron',monospace;font-size:12px;color:#00ff88;">{{ t.player_result.kills }}K</span>
+              <span style="color:var(--muted);">/</span>
+              <span style="font-family:'Orbitron',monospace;font-size:12px;color:var(--neon2);">{{ t.player_result.deaths }}D</span>
+              <span class="tag {% if t.player_result.result == 'win' %}tag-win{% else %}tag-loss{% endif %}">{% if t.player_result.result == 'win' %}WIN{% else %}LOSS{% endif %}</span>
+            </div>
+          {% else %}
+            <span style="font-size:12px;color:var(--muted);">Pending</span>
+          {% endif %}
+        </td>
+        <td style="padding:14px 16px;text-align:center;">
+          <span style="font-family:'Orbitron',monospace;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px;
+            {% if t.status == 'live' %}background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.3);
+            {% elif t.status == 'upcoming' %}background:rgba(0,245,255,0.08);color:var(--neon);border:1px solid rgba(0,245,255,0.2);
+            {% else %}background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid rgba(255,255,255,0.1);{% endif %}">
+            {{ t.status|upper }}
+          </span>
+        </td>
+        <td style="padding:14px 16px;text-align:right;">
+          <a href="{% url 'tournament_detail' t.slug %}" style="font-size:11px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--border);padding-bottom:1px;">View →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
